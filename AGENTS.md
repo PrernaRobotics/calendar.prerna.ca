@@ -1,3 +1,124 @@
+# Prerna Calendar — calendar.prerna.ca
+
+Self-hosted cal.com instance for **Prerna Robotics Inc.** providing external booking/scheduling and internal team calendar at `calendar.prerna.ca`.
+
+## Project Context
+
+- **Company**: Prerna Robotics Inc. (prerna.ca)
+- **Subdomain**: calendar.prerna.ca
+- **Source**: Forked from [cal.com/cal.com](https://github.com/calcom/cal.com) (cloned 2026-04-12)
+- **Goal**: Full self-hosted cal.com with Prerna branding — external client booking (demo scheduling for PREP product) + internal team scheduling
+- **Parent site**: prerna.ca (React SPA on AWS Amplify, ca-central-1)
+
+## Infrastructure
+
+- **Hosting target**: AWS Amplify (separate app for the subdomain) with external RDS PostgreSQL
+- **DNS**: Route53 hosted zone `Z0039219V8R9ZTDCN4Y2` (same zone as prerna.ca)
+- **Parent Amplify App ID**: `d10r3ez5qh4pl6` (for reference — this is the prerna.ca app, not this one)
+- **Region**: ca-central-1 (same as parent site)
+
+## Local Development
+
+### Prerequisites
+
+- Docker Desktop (required)
+- Node.js >= 18
+- Yarn (bundled via `.yarn/releases/yarn-4.12.0.cjs`)
+
+### Quick Start (Native Dev — recommended)
+
+Port 3000 is used by another local service (prep-web), so cal.com runs on **port 3001**.
+
+```bash
+cd ~/Coding/calendar.prerna.ca/Prerna\ Calendar
+
+# 1. Start PostgreSQL + Redis via Docker
+docker-compose up -d database redis
+
+# 2. Install dependencies (~1-2 min)
+yarn install
+
+# 3. Run migrations + generate types
+npx prisma migrate deploy --schema packages/prisma/schema.prisma
+yarn prisma generate
+
+# 4. Start dev server (http://localhost:3001)
+yarn dev
+```
+
+### Quick Start (Full Docker)
+
+```bash
+cd ~/Coding/calendar.prerna.ca/Prerna\ Calendar
+docker-compose up
+```
+
+This starts PostgreSQL (port 5450), Redis, and the cal.com web app (port 3001). First build takes ~5-10 minutes.
+
+### Environment Variables (Key Ones)
+
+Already configured in `.env`:
+
+- `DATABASE_URL` — `postgresql://postgres:postgres@localhost:5450/calendso`
+- `DATABASE_DIRECT_URL` — Same as DATABASE_URL (no connection pooler locally)
+- `NEXTAUTH_SECRET` — Generated, do not commit
+- `CALENDSO_ENCRYPTION_KEY` — 32-char AES256 key, do not commit
+- `NEXT_PUBLIC_WEBAPP_URL` — `http://localhost:3001` (local) or `https://calendar.prerna.ca` (prod)
+- `PORT=3001` — Dev server port (3000 is taken by prep-web)
+- `CALCOM_TELEMETRY_DISABLED=1` — Telemetry off
+
+### Docker Compose Services
+
+| Service | Host Port | Description |
+|---------|-----------|-------------|
+| database | 5450 | PostgreSQL (postgres:15-alpine) |
+| redis | 6379 | Redis cache |
+| calcom | 3001 | Main Next.js app |
+| calcom-api | 80 | API v2 |
+| studio | 5555 | Prisma Studio (dev only) |
+
+### Notes
+
+- `packages/prisma/.env` must NOT be a symlink to root `.env` (causes Prisma conflict). It should be empty or contain only `DATABASE_URL`.
+- The `.env.example` dotenv-checker auto-adds missing keys to `.env` on `yarn dev` — this is normal.
+
+## What's Been Done
+
+1. Cloned cal.com repo into `~/Coding/calendar.prerna.ca/Prerna Calendar/`
+2. Created `.env` with generated secrets (`NEXTAUTH_SECRET`, `CALENDSO_ENCRYPTION_KEY`), database config, and local dev URLs
+3. Docker Compose config fixed — credentials aligned, postgres:15-alpine image, port 5450 exposed
+4. Dependencies installed, 590 Prisma migrations applied, types generated
+5. Dev server runs on port 3001 (`http://localhost:3001`)
+
+## What's Next
+
+1. **Branding**: Customize logo, colors, app name for Prerna Robotics
+2. **AWS Setup**: Create RDS PostgreSQL, new Amplify app, Route53 subdomain record for `calendar.prerna.ca`
+3. **Deploy**: Push to Amplify with production `.env` pointing to RDS
+4. **Customize**: Add Prerna-specific event types, booking pages, team setup
+
+## Branding Changes (Applied)
+
+- App name: "Prerna Calendar" (env vars + constants)
+- Company name: "Prerna Robotics Inc."
+- Colors: Extracted from prerna.ca CSS variables:
+  - Primary brand: `#2563eb` (prep-blue)
+  - Accent: `#7c3aed` (prep-violet)
+  - Surfaces: `#09090b` / `#18181b` / `#1c1c1f`
+  - Applied to `--cal-brand` in light mode (`hsla(217,91%,53%,1)`) and dark mode (`hsla(217,91%,60%,1)`)
+- Default timezone: America/Toronto (EST)
+- Allowed hostnames: `calendar.prerna.ca`, `localhost:3001`
+- Logo: TODO — replace Cal.com logos in `apps/web/public/` with Prerna Robotics assets
+
+## Important Notes
+
+- `.env` is gitignored — never commit secrets
+- The upstream cal.com CLAUDE.md dev guide is preserved below for engineering standards
+- Cal.com is AGPL-licensed — the codebase must stay open source if modified
+- Enterprise features (SAML, org management) require a license key from cal.com/sales
+
+---
+
 # Cal.com Development Guide for AI Agents
 
 You are a senior Cal.com engineer working in a Yarn/Turbo monorepo. You prioritize type safety, security, and small, reviewable diffs.

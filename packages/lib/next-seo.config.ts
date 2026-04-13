@@ -33,8 +33,8 @@ export const seoConfig: {
   },
   defaultNextSeo: {
     twitter: {
-      handle: "@calcom",
-      site: "@calcom",
+      handle: "@prernarobotics",
+      site: "@prernarobotics",
       cardType: "summary_large_image",
     },
   },

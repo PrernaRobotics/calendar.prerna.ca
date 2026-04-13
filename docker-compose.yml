@@ -12,14 +12,16 @@ networks:
 services:
   database:
     container_name: database
-    image: postgres
+    image: postgres:15-alpine
     restart: always
     volumes:
-      - database-data:/var/lib/postgresql
+      - database-data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_USER=unicorn_user
-      - POSTGRES_PASSWORD=magical_password
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=calendso
+    ports:
+      - 5450:5432
     networks:
       - stack
 
@@ -57,7 +59,7 @@ services:
     networks:
       - stack
     ports:
-      - 3000:3000
+      - 3001:3000
     env_file: .env
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DATABASE_HOST}/${POSTGRES_DB}
