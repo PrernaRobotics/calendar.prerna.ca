@@ -16,6 +16,18 @@ Self-hosted cal.com instance for **Prerna Robotics Inc.** providing external boo
 - **DNS**: Route53 hosted zone `Z0039219V8R9ZTDCN4Y2` (same zone as prerna.ca)
 - **Parent Amplify App ID**: `d10r3ez5qh4pl6` (for reference — this is the prerna.ca app, not this one)
 - **Region**: ca-central-1 (same as parent site)
+- **GitHub repo**: `PrernaRobotics/calendar.prerna.ca` (private)
+
+### AWS Resources (Provisioned)
+
+| Resource | Identifier | Endpoint |
+|----------|-----------|----------|
+| RDS PostgreSQL 15 | `prerna-calendar-db` (db.t4g.micro, 20GB gp3) | `prerna-calendar-db.cxcwu0cocliu.ca-central-1.rds.amazonaws.com:5432` |
+| ElastiCache Redis (serverless) | `prerna-calendar-redis` | `prerna-calendar-redis-tks45w.serverless.cac1.cache.amazonaws.com:6379` |
+| Security Group (RDS) | `sg-053baaf7c17b81cad` (prerna-calendar-rds) | Inbound TCP 5432 from 0.0.0.0/0 |
+| Security Group (Redis) | `sg-0bed2bf62eb96fd6c` (prerna-calendar-redis) | Inbound TCP 6379 from 0.0.0.0/0 |
+
+- Production env values are in `.env.production` (gitignored)
 
 ## Local Development
 
